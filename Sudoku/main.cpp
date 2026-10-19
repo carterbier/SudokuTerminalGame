@@ -3,29 +3,37 @@
 #include <algorithm>
 #include <cstdlib>
 #include <string>
-#include <limits>
+#include <conio.h>
 
 void displayPuzzle(int board[][9])
 {
-	std::cout << "\n";
+	std::cout << "\t     ";
 	for (int i = 0; i < 9; i++)
 	{
+		std::cout << i + 1 << " ";
+		if (i == 2 || i == 5)
+			std::cout << "  ";
+	}
+	std::cout << "\n\t   +-------+-------+-------+\n";
+	for (int i = 0; i < 9; i++)
+	{
+		std::cout << "\t " << i + 1 << " | ";
 		for (int j = 0; j < 9; j++)
 		{
 			if (board[i][j] == 0)
-				std::cout << " " << " ";
+				std::cout << "  ";
 			else
 				std::cout << board[i][j] << " ";
 
 			if (j == 2 || j == 5)
 				std::cout << "| ";
 		}
-		std::cout << "\n";
+		std::cout << "|\n";
 
 		if (i == 2 || i == 5)
-			std::cout << "------+-------+------\n";
+			std::cout << "\t   +-------+-------+-------+\n";
 	}
-	std::cout << "\n";
+	std::cout << "\t   +-------+-------+-------+\n\n";
 }
 
 bool isValid(int board[][9], int row, int column, int num)	//checks all three Sudoku constraints
@@ -128,6 +136,42 @@ bool fillBoard(int board[][9], int row, int column, std::mt19937& generator)
 	return false;
 }
 
+bool readGameInput(std::string& input)
+{
+	input.clear();
+
+	while (true)
+	{
+		int key = _getch();
+
+		if (key == 27)
+			return false;
+		if (key == 13)
+		{
+			std::cout << "\n";
+			return true;
+		}
+		if (key >= '1' && key <= '9' && input.empty())
+		{
+			input += static_cast<char>(key);
+			std::cout << static_cast<char>(key);
+		}
+		if (key == 8)
+		{
+			if (!input.empty())
+			{
+				input.pop_back();
+				std::cout << "\b \b";
+			}
+		}
+		if (key == 0 || key == 224)
+		{
+			(void)_getch();
+			continue;
+		}
+	}
+}
+
 bool isValidInput(const std::string& input)
 {
 	if (input.length() != 1)
@@ -141,51 +185,54 @@ bool isValidInput(const std::string& input)
 	return true;
 }
 
+void displayTitle()
+{
+	std::cout << "\n================================================";
+	std::cout << "\n            SUDOKU C++ Terminal Game            ";
+	std::cout << "\n================================================\n\n";
+}
+
 void playGame(int puzzle[][9], int solution[][9])
 {
 	int row, column, num;
 
 	std::string message = "";
+	const std::string prompts[3] = { "Enter row: ", "Enter column: ", "Enter number: " };
 
 	while (!isComplete(puzzle, solution))
 	{
 		system("cls");
-		std::cout << message << "\n";
+		std::cout << " [ESC] Main Menu";
+		displayTitle();
 		displayPuzzle(puzzle);
+		std::cout << message << "\n\n";
 
-		std::string input;
-		std::cout << "Enter row: ";
-		if (!std::getline(std::cin, input))
-			return;
-		if (!isValidInput(input))
+		std::string inputs[3];
+
+		bool valid = true;
+
+		for (int i = 0; i < 3; i++)
 		{
-			message = "Invalid input. Enter values from 1 to 9.";
-			continue;
-		}
-		row = input[0] - '0';
+			std::cout << prompts[i];
 
-		std::cout << "Enter column: ";
-		if (!std::getline(std::cin, input))
-			return;
-		if (!isValidInput(input))
-		{
-			message = "Invalid input. Enter values from 1 to 9.";
-			continue;
-		}
-		column = input[0] - '0';
+			if (!readGameInput(inputs[i]))
+				return;
 
-		std::cout << "Enter number: ";
-		if (!std::getline(std::cin, input))
-			return;
-		if (!isValidInput(input))
-		{
-			message = "Invalid input. Enter values from 1 to 9.";
-			continue;
-		}
-		num = input[0] - '0';
+			if (!isValidInput(inputs[i]))
+			{
+				message = "Invalid input. Enter values from 1 to 9.";
+				valid = false;
+				break;
+			}
 
-		row--;
-		column--;
+		}
+
+		if (!valid)
+			continue;
+		
+		row = inputs[0][0] - '1';
+		column = inputs[1][0] - '1';
+		num = inputs[2][0] - '0';
 
 		if (puzzle[row][column] != 0)
 			message = "The cell is already filled.";
@@ -198,9 +245,13 @@ void playGame(int puzzle[][9], int solution[][9])
 		}
 	}
 	system("cls");
+	displayTitle();
 	displayPuzzle(puzzle);
-	std::cout << "\nCongratulations! You solved the puzzle!\n";
-
+	std::cout << "================================================";
+	std::cout << "\n    Congratulations! You solved the puzzle!";
+	std::cout << "\n================================================\n";
+	std::cout << "\nPress [ESC] to return to the main menu...";
+	while (_getch() != 27);
 }
 
 void generatePuzzle()
@@ -250,18 +301,32 @@ void generatePuzzle()
 	playGame(puzzle, board);
 }
 
+void displayMenu()
+{
+	while (true) 
+	{
+		system("cls");
+		std::cout << "[ESC] Exit Game";
+		displayTitle();
+		std::cout << "\n\t[ENTER] Play Game\n\n";
+		
+		int key = _getch();
+
+		if (key == 13)
+			generatePuzzle();
+		else if (key == 27)
+		{
+			system("cls");
+			displayTitle();
+			std::cout << "\n\tThanks for playing...\n\n";
+			return;
+		}
+	}
+}
+
 int main()
 {
-	char input;
-
-	std::cout << "Would you like to play Sudoku (Y/n): ";
-	if (!(std::cin >> input))
-		return 0;
-	
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-	if (input == 'Y' || input == 'y')
-		generatePuzzle();
+	displayMenu();
 
 	return 0;
 }
