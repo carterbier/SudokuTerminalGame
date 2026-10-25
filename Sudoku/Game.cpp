@@ -1,8 +1,8 @@
 #include <conio.h>
-#include <cstdlib>
 #include <iostream>
 
 #include "Game.h"
+#include "Terminal.h"
 
 void Game::run()
 {
@@ -11,21 +11,25 @@ void Game::run()
 
 void Game::displayTitle()
 {
-	std::cout << "\n================================================";
-	std::cout << "\n            SUDOKU C++ Terminal Game            ";
-	std::cout << "\n================================================\n\n";
+	std::cout << "\n=================================================";
+	std::cout << "\n            SUDOKU C++ Terminal Game";
+	std::cout << "\n=================================================\n\n";
 }
 
 void Game::displayMenu()
 {
 	while (true)
 	{
-		std::system("cls");
+		Terminal::clearScreen();
 		std::cout << " [ESC] Exit Game";
 		displayTitle();
-		std::cout << "\n\t[ENTER] Play Game\n\n";
+		std::cout << "\n\t\t[ENTER] Play Game\n\n";
 
-		int key = _getch();
+		int key;
+		do 
+			key = _getch();
+		while (key != ENTER_KEY && key != ESC_KEY);
+
 		if (key == ENTER_KEY)
 		{
 			sudoku.generatePuzzle();
@@ -33,9 +37,6 @@ void Game::displayMenu()
 		}
 		else if (key == ESC_KEY)
 		{
-			std::system("cls");
-			displayTitle();
-			std::cout << "\n\tThanks for playing...\n\n";
 			return;
 		}
 	}
@@ -113,12 +114,15 @@ void Game::playGame()
 
 	while (!sudoku.isComplete())
 	{
-		std::system("cls");
+		Terminal::clearScreen();
 		std::cout << " [ESC] Main Menu";
 		displayTitle();
 		displayPuzzle();
 
-		std::cout << message << "\n\n";
+		if (!message.empty())
+			std::cout << "\t[!] " << message;
+		std::cout << "\n\n";
+
 		std::string inputs[3];
 		bool valid = true;
 		for (int i = 0; i < 3; i++)
@@ -152,12 +156,12 @@ void Game::playGame()
 		else if (result == Sudoku::MoveResult::Invalid)
 			message = "Invalid move.";
 	}
-	std::system("cls");
+	Terminal::clearScreen();
+	std::cout << " [ESC] Main Menu";
 	displayTitle();
 	displayPuzzle();
-	std::cout << "================================================";
+	std::cout << "=================================================";
 	std::cout << "\n    Congratulations! You solved the puzzle!";
-	std::cout << "\n================================================\n";
-	std::cout << "\nPress [ESC] to return to the main menu...";
+	std::cout << "\n=================================================\n";
 	while (_getch() != ESC_KEY);
 }

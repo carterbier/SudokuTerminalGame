@@ -140,13 +140,5 @@ Sudoku::MoveResult Sudoku::makeMove(int row, int column, int num)
 
 bool Sudoku::isComplete() const
 {
-	for (int i = 0; i < BOARD_SIZE; i++)
-	{
-		for (int j = 0; j < BOARD_SIZE; j++)
-		{
-			if (puzzle[i][j] != solution[i][j])
-				return false;
-		}
-	}
-	return true;
+	return puzzle == solution;
 }
